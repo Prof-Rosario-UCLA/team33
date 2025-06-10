@@ -1,62 +1,143 @@
-import { FaPlus, FaEgg, FaAppleAlt, FaBreadSlice, FaCheese, FaDrumstickBite, FaCarrot, FaBoxOpen } from "react-icons/fa";
-import Link from "next/link";
+"use client";
+import { useEffect, useState } from "react";
+import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
+
+const USER_ID = "demo-user-id"; // Replace with real user id when auth is ready
+
+type PantryItem = {
+  id: string;
+  name: string;
+  qty: number;
+  expirationDate?: string | null;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export default function PantryPage() {
-  // Mock pantry items
-  const items = [
-    { name: "Apples", icon: <FaAppleAlt className="text-primary" /> },
-    { name: "Bread", icon: <FaBreadSlice className="text-secondary" /> },
-    { name: "Milk", icon: <FaBoxOpen className="text-accent" /> },
-    { name: "Chicken", icon: <FaDrumstickBite className="text-primary" /> },
-    { name: "Flour", icon: <FaBoxOpen className="text-secondary" /> },
-    { name: "Eggs", icon: <FaEgg className="text-accent" /> },
-    { name: "Cheese", icon: <FaCheese className="text-primary" /> },
-    { name: "Onions", icon: <FaCarrot className="text-secondary" /> },
-    { name: "Pasta", icon: <FaBoxOpen className="text-accent" /> },
-  ];
+  const [items, setItems] = useState<PantryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [newItem, setNewItem] = useState({ name: "", qty: 1, expirationDate: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editItem, setEditItem] = useState({ name: "", qty: 1, expirationDate: "" });
+
+  // Fetch pantry items
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/pantry-items?userId=${USER_ID}`)
+      .then(res => res.json())
+      .then((data: PantryItem[]) => setItems(data))
+      .catch(() => setError("Failed to load items"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Add item
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const res = await fetch("/api/pantry-items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...newItem, userId: USER_ID }),
+    });
+    if (!res.ok) return setError("Failed to add item");
+    const item: PantryItem = await res.json();
+    setItems([item, ...items]);
+    setNewItem({ name: "", qty: 1, expirationDate: "" });
+    setLoading(false);
+  };
+
+  // Delete item
+  const handleDelete = async (id: string) => {
+    setLoading(true);
+    setError("");
+    const res = await fetch(`/api/pantry-items?id=${id}`, { method: "DELETE" });
+    if (!res.ok) return setError("Failed to delete item");
+    setItems(items.filter(i => i.id !== id));
+    setLoading(false);
+  };
+
+  // Start editing
+  const startEdit = (item: PantryItem) => {
+    setEditingId(item.id);
+    setEditItem({ name: item.name, qty: item.qty, expirationDate: item.expirationDate?.slice(0, 10) || "" });
+  };
+
+  // Save edit
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const res = await fetch("/api/pantry-items", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editingId, ...editItem }),
+    });
+    if (!res.ok) return setError("Failed to update item");
+    const updated: PantryItem = await res.json();
+    setItems(items.map(i => (i.id === editingId ? updated : i)));
+    setEditingId(null);
+    setEditItem({ name: "", qty: 1, expirationDate: "" });
+    setLoading(false);
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <h1 className="text-3xl font-bold text-primary">In Your Pantry</h1>
-        <div className="flex gap-2">
+        <form className="flex gap-2" onSubmit={editingId ? handleEdit : handleAdd}>
           <input
             type="text"
-            placeholder="Search pantry"
-            className="rounded-l-lg px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+            placeholder="Item name"
+            className="rounded-lg px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+            value={editingId ? editItem.name : newItem.name}
+            onChange={e => editingId ? setEditItem({ ...editItem, name: e.target.value }) : setNewItem({ ...newItem, name: e.target.value })}
+            required
           />
-          <button className="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-secondary transition-colors flex items-center gap-2">
-            <FaPlus /> Add Item
+          <input
+            type="number"
+            min="1"
+            className="w-20 rounded-lg px-2 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+            value={editingId ? editItem.qty : newItem.qty}
+            onChange={e => editingId ? setEditItem({ ...editItem, qty: +e.target.value }) : setNewItem({ ...newItem, qty: +e.target.value })}
+            required
+          />
+          <input
+            type="date"
+            className="rounded-lg px-2 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+            value={editingId ? editItem.expirationDate : newItem.expirationDate}
+            onChange={e => editingId ? setEditItem({ ...editItem, expirationDate: e.target.value }) : setNewItem({ ...newItem, expirationDate: e.target.value })}
+          />
+          <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition-colors flex items-center gap-2" type="submit">
+            <FaPlus /> {editingId ? "Save" : "Add"}
           </button>
-        </div>
+          {editingId && (
+            <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg ml-2" type="button" onClick={() => { setEditingId(null); setEditItem({ name: "", qty: 1, expirationDate: "" }); }}>
+              Cancel
+            </button>
+          )}
+        </form>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-10">
-        {items.map((item) => (
-          <div key={item.name} className="flex flex-col items-center bg-white rounded-xl shadow p-4 border border-gray-100">
-            <div className="text-3xl mb-2">{item.icon}</div>
-            <span className="font-semibold text-gray-800">{item.name}</span>
-          </div>
-        ))}
-      </div>
-      <section className="mt-8">
-        <h2 className="text-xl font-bold text-secondary mb-4">Recipe Suggestions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-            <span className="text-lg font-semibold mb-2">Chicken Stir-Fry</span>
-            <span className="text-gray-600 text-sm mb-1">3 of 5 ingredients</span>
-            <button className="mt-2 bg-primary text-white px-4 py-1 rounded hover:bg-secondary transition-colors">View Recipe</button>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-            <span className="text-lg font-semibold mb-2">Tomato Basil Pasta</span>
-            <span className="text-gray-600 text-sm mb-1">4 of 6 ingredients</span>
-            <button className="mt-2 bg-primary text-white px-4 py-1 rounded hover:bg-secondary transition-colors">View Recipe</button>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-            <span className="text-lg font-semibold mb-2">Avocado Salad</span>
-            <span className="text-gray-600 text-sm mb-1">4 of 6 ingredients</span>
-            <button className="mt-2 bg-primary text-white px-4 py-1 rounded hover:bg-secondary transition-colors">View Recipe</button>
-          </div>
+      {error && <div className="text-alert mb-4">{error}</div>}
+      {loading ? (
+        <div className="text-gray-500">Loading...</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          {items.map((item) => (
+            <div key={item.id} className="flex flex-col items-center bg-white rounded-xl shadow p-4 border border-gray-100">
+              <span className="font-semibold text-gray-800 text-lg mb-1">{item.name}</span>
+              <span className="text-gray-600 text-sm mb-1">Qty: {item.qty}</span>
+              {item.expirationDate && <span className="text-xs text-secondary mb-2">Expires: {item.expirationDate.slice(0, 10)}</span>}
+              <div className="flex gap-2 mt-2">
+                <button className="text-primary hover:text-secondary" onClick={() => startEdit(item)}><FaEdit /></button>
+                <button className="text-alert hover:text-secondary" onClick={() => handleDelete(item.id)}><FaTrash /></button>
+              </div>
+            </div>
+          ))}
         </div>
-      </section>
+      )}
     </div>
   );
 }
