@@ -2,6 +2,18 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
+  // Create demo user first
+  await prisma.user.upsert({
+    where: { email: 'demo@pantrify.com' },
+    update: {},
+    create: {
+      id: 'demo-user-id',
+      email: 'demo@pantrify.com',
+      password: 'demo-password-hash', // In real app, this would be properly hashed
+    },
+  });
+
+  console.log('Demo user created/updated');
   const suggestions = [
     { name: 'Apples', imageUrl: '/images/pantry/apples.png', description: 'Fresh apples, great for snacks and baking.' },
     { name: 'Bread', imageUrl: '/images/pantry/bread.png', description: 'Loaf of bread, perfect for sandwiches.' },
@@ -26,6 +38,8 @@ async function main() {
       create: s,
     });
   }
+  
+  console.log('Pantry suggestions seeded');
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect()); 
