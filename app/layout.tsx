@@ -18,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <nav className="bg-primary text-white px-6 py-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-2xl font-bold tracking-tight">Pantrify</Link>
-            <Link href="/recipes" className="ml-6 hover:text-accent transition-colors">Saved Recipes</Link>
+            <Link href="/pantry" className="ml-6 hover:text-accent transition-colors">Pantry</Link>
+            <Link href="/scan" className="hover:text-accent transition-colors">AI Scan</Link>
+            <Link href="/recipes" className="hover:text-accent transition-colors">Recipes</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/profile" className="hover:text-accent transition-colors">Profile</Link>

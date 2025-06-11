@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
+import { FaPlus, FaTrash, FaEdit, FaCamera } from "react-icons/fa";
 import Link from "next/link";
 
 const USER_ID = "demo-user-id"; // Replace with real user id when auth is ready
@@ -90,6 +90,14 @@ export default function PantryPage() {
         <div>
           <h1 className="text-3xl font-bold text-primary">In Your Pantry</h1>
           <p className="text-gray-600 mt-1">Add items to get personalized recipe suggestions</p>
+        </div>
+        <div className="flex gap-2">
+          <Link 
+            href="/scan"
+            className="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors flex items-center gap-2"
+          >
+            <FaCamera /> AI Scan
+          </Link>
         </div>
         <form className="flex gap-2" onSubmit={editingId ? handleEdit : handleAdd}>
           <input
