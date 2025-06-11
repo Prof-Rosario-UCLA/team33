@@ -11,7 +11,7 @@ Welcome to Pantrify! This project is all about making your life in the kitchen a
 
 ## Getting Started
 
-Here's how to run this repo
+Want to run this on your own machine? Here's how:
 
 1.  **Clone the repository:**
 
@@ -27,19 +27,25 @@ Here's how to run this repo
     ```
 
 3.  **Set up your environment variables:**
-    Create a `.env.` file in the root of the project and add the following environment variables:
+    Create a `.env` file in the root of the project and add the following environment variables:
 
-    ```
-    # PostgreSQL
-    DATABASE_URL=""
-    DIRECT_URL=""
+    ```bash
+    # Database Configuration
+    DATABASE_URL="postgresql://username:password@localhost:5432/pantrify"
+    DIRECT_URL="postgresql://username:password@localhost:5432/pantrify"
 
-    # NextAuth
-    NEXTAUTH_SECRET=""
-    NEXTAUTH_URL=""
+    # NextAuth Configuration (HTTPS Security)
+    NEXTAUTH_SECRET="your-super-secret-jwt-secret-key-here"
+    NEXTAUTH_URL="https://your-domain.com"
 
-    # Spoonacular API
-    SPOONACULAR_API_KEY = ""
+    # API Keys
+    SPOONACULAR_API_KEY="your-spoonacular-api-key"
+
+    # Google Vision API
+    GOOGLE_APPLICATION_CREDENTIALS="./google_vision_service.json"
+
+    # Security Configuration
+    NODE_ENV="production"  # Set to production for HTTPS enforcement
     ```
 
 4.  **Run the development server:**
@@ -48,6 +54,16 @@ Here's how to run this repo
     ```
 
 Now you can open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action
+
+## Security Features
+
+This application implements several security best practices:
+
+- **HTTPS Enforcement**: Automatic HTTP to HTTPS redirects in production
+- **HTTP-Only Cookies**: JWT tokens stored in secure, HTTP-only cookies
+- **SQL Injection Prevention**: Prisma ORM with parameterized queries
+- **CSRF Protection**: Built-in CSRF protection via NextAuth.js
+- **Password Security**: Bcrypt hashing for password storage
 
 ## Tech Stack
 
