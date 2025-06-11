@@ -1,0 +1,42 @@
+{
+  "theme_color": "#f69435",
+  "background_color": "#f69435",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "name": "Pantrify",
+  "short_name": "Pantrify",
+  "description": "Your pantry, simplified.",
+  "icons": [
+    {
+      "src": "/icons/logo16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logo32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logo188.png",
+      "sizes": "188x188",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logo256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
