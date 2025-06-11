@@ -33,7 +33,12 @@ const OfflineBanner = () => {
   }
 
   return (
-    <div className="bg-yellow-500 text-white p-4 text-center">
+    <div 
+      className="bg-yellow-500 text-white p-4 text-center"
+      role="alert"
+      aria-live="polite"
+      aria-label="Connection status"
+    >
       <p>You are currently offline. Trying to fetch data...</p>
     </div>
   );

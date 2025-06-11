@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { FaCamera, FaUpload, FaRedo, FaCheck, FaTimes } from 'react-icons/fa';
 
 interface CameraCaptureProps {
@@ -15,6 +15,23 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Focus management for modal
+  useEffect(() => {
+    if (closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   // Start camera stream
   const startCamera = async () => {
@@ -103,14 +120,24 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+      role="dialog"
+      aria-labelledby="camera-dialog-title"
+      aria-describedby="camera-dialog-description"
+      aria-modal="true"
+    >
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-bold text-gray-800">Capture Items</h2>
+          <h2 id="camera-dialog-title" className="text-xl font-bold text-gray-800">
+            Capture Items
+          </h2>
           <button 
+            ref={closeButtonRef}
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-xl"
+            className="text-gray-500 hover:text-gray-700 text-xl focus:outline-none focus:ring-2 focus:ring-primary rounded p-1"
+            aria-label="Close camera dialog"
           >
             ×
           </button>
@@ -118,8 +145,16 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
 
         {/* Content */}
         <div className="p-4">
+          <p id="camera-dialog-description" className="sr-only">
+            Use your camera to capture items or upload an existing photo for AI analysis
+          </p>
+          
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+            <div 
+              className="bg-red-50 text-red-600 p-3 rounded-lg mb-4"
+              role="alert"
+              aria-live="polite"
+            >
               {error}
             </div>
           )}
@@ -134,13 +169,15 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
                     autoPlay
                     playsInline
                     className="w-full rounded-lg"
+                    aria-label="Camera preview for capturing items"
                   />
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                     <button
                       onClick={capturePhoto}
-                      className="bg-white text-primary p-4 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+                      className="bg-white text-primary p-4 rounded-full shadow-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      aria-label="Capture photo"
                     >
-                      <FaCamera className="text-2xl" />
+                      <FaCamera className="text-2xl" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -148,22 +185,22 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
                 /* Camera controls */
                 <div className="text-center space-y-4">
                   <div className="bg-gray-100 rounded-lg p-8">
-                    <FaCamera className="text-6xl text-gray-400 mx-auto mb-4" />
+                    <FaCamera className="text-6xl text-gray-400 mx-auto mb-4" aria-hidden="true" />
                     <p className="text-gray-600 mb-4">Capture items with your camera or upload an image</p>
                     
-                    <div className="flex gap-4 justify-center">
+                    <div className="flex gap-4 justify-center" role="group" aria-label="Image capture options">
                       <button
                         onClick={startCamera}
-                        className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition-colors flex items-center gap-2"
+                        className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                       >
-                        <FaCamera /> Use Camera
+                        <FaCamera aria-hidden="true" /> Use Camera
                       </button>
                       
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                        className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2"
                       >
-                        <FaUpload /> Upload Photo
+                        <FaUpload aria-hidden="true" /> Upload Photo
                       </button>
                     </div>
                     
@@ -173,6 +210,7 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
                       accept="image/*"
                       onChange={handleFileUpload}
                       className="hidden"
+                      aria-label="Upload image file"
                     />
                   </div>
                 </div>
@@ -184,24 +222,24 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
               <div className="text-center">
                 <img 
                   src={capturedImage} 
-                  alt="Captured" 
+                  alt="Captured image preview for AI analysis" 
                   className="max-w-full max-h-96 mx-auto rounded-lg"
                 />
               </div>
               
-              <div className="flex gap-4 justify-center">
+              <div className="flex gap-4 justify-center" role="group" aria-label="Image preview actions">
                 <button
                   onClick={reset}
-                  className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
+                  className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
-                  <FaRedo /> Retake
+                  <FaRedo aria-hidden="true" /> Retake
                 </button>
                 
                 <button
                   onClick={confirmImage}
-                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
                 >
-                  <FaCheck /> Analyze Image
+                  <FaCheck aria-hidden="true" /> Analyze Image
                 </button>
               </div>
             </div>
@@ -209,7 +247,11 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
         </div>
 
         {/* Hidden canvas for photo capture */}
-        <canvas ref={canvasRef} className="hidden" />
+        <canvas 
+          ref={canvasRef} 
+          className="hidden" 
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
