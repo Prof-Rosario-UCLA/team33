@@ -22,7 +22,7 @@ export default function ItemSelection({
   isLoading = false 
 }: ItemSelectionProps) {
   const [items, setItems] = useState<DetectedItem[]>(
-    detectedItems.map(item => ({
+    (detectedItems || []).map(item => ({
       name: item,
       selected: true, // Default to selected
       quantity: 1

@@ -7,13 +7,53 @@ const visionClient = new ImageAnnotatorClient({
   keyFilename: path.join(process.cwd(), 'google_vision_service.json'),
 });
 
-// Common food items that might be detected
 const FOOD_KEYWORDS = [
-  'apple', 'banana', 'orange', 'tomato', 'potato', 'onion', 'carrot', 'bread', 'milk', 'cheese',
-  'chicken', 'beef', 'pork', 'fish', 'egg', 'rice', 'pasta', 'flour', 'sugar', 'salt',
-  'pepper', 'oil', 'butter', 'yogurt', 'lettuce', 'cucumber', 'bell pepper', 'broccoli',
-  'spinach', 'garlic', 'ginger', 'lemon', 'lime', 'avocado', 'strawberry', 'grapes',
-  'mushroom', 'corn', 'beans', 'nuts', 'cereal', 'oats', 'honey', 'jam', 'sauce'
+  // Fruits
+  'apple', 'banana', 'orange', 'grape', 'strawberry', 'blueberry', 'raspberry', 'blackberry',
+  'lemon', 'lime', 'grapefruit', 'pear', 'peach', 'plum', 'cherry', 'apricot', 'kiwi',
+  'mango', 'pineapple', 'watermelon', 'cantaloupe', 'honeydew', 'avocado', 'coconut',
+  
+  // Vegetables
+  'tomato', 'potato', 'onion', 'garlic', 'carrot', 'celery', 'lettuce', 'spinach', 'kale',
+  'broccoli', 'cauliflower', 'cabbage', 'pepper', 'cucumber', 'zucchini', 'eggplant',
+  'mushroom', 'corn', 'peas', 'beans', 'asparagus', 'artichoke', 'beet', 'radish',
+  'turnip', 'parsnip', 'sweet potato', 'squash', 'pumpkin', 'okra', 'brussels sprouts',
+  
+  // Proteins
+  'chicken', 'beef', 'pork', 'lamb', 'turkey', 'duck', 'fish', 'salmon', 'tuna', 'cod',
+  'shrimp', 'crab', 'lobster', 'egg', 'tofu', 'tempeh', 'seitan', 'beans', 'lentils',
+  'chickpeas', 'nuts', 'almonds', 'walnuts', 'peanuts', 'cashews', 'pistachios', 'eggs',
+  
+  // Dairy
+  'milk', 'cheese', 'butter', 'yogurt', 'cream', 'sour cream', 'cottage cheese',
+  'mozzarella', 'cheddar', 'parmesan', 'swiss', 'feta', 'goat cheese',
+  
+  // Grains & Starches
+  'rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'barley', 'wheat', 'rye',
+  'cereal', 'crackers', 'noodles', 'couscous', 'bulgur', 'millet', 'buckwheat',
+  
+  // Pantry staples
+  'oil', 'olive oil', 'vinegar', 'salt', 'pepper', 'sugar', 'honey', 'maple syrup',
+  'soy sauce', 'hot sauce', 'ketchup', 'mustard', 'mayonnaise', 'jam', 'jelly',
+  'peanut butter', 'almond butter', 'tahini', 'vanilla', 'cinnamon', 'oregano',
+  'basil', 'thyme', 'rosemary', 'parsley', 'cilantro', 'dill', 'sage', 'paprika',
+  
+  // Beverages & Others
+  'coffee', 'tea', 'juice', 'wine', 'beer', 'soda', 'water', 'broth', 'stock',
+  'coconut milk', 'almond milk', 'oat milk', 'soy milk'
+];
+
+// Non-food items to exclude
+const NON_FOOD_ITEMS = [
+  'plate', 'bowl', 'cup', 'glass', 'fork', 'knife', 'spoon', 'table', 'counter',
+  'kitchen', 'cabinet', 'drawer', 'refrigerator', 'stove', 'oven', 'microwave',
+  'cutting board', 'pan', 'pot', 'container', 'bag', 'box', 'package', 'wrapper',
+  'bottle', 'can', 'jar', 'packaging', 'label', 'brand', 'logo', 'text', 'paper',
+  'plastic', 'metal', 'wood', 'ceramic', 'glass', 'fabric', 'person', 'hand',
+  'finger', 'arm', 'face', 'clothing', 'shirt', 'background', 'wall', 'floor',
+  'ceiling', 'light', 'shadow', 'reflection', 'color', 'white', 'black', 'red',
+  'blue', 'green', 'yellow', 'orange', 'purple', 'brown', 'gray', 'food', 'dairy product',
+  'produce', 'spice', 'drink', 'recipe'
 ];
 
 export async function POST(req: NextRequest) {
@@ -29,41 +69,37 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Call Google Vision API
-    const [result] = await visionClient.labelDetection({
+    // Call Google Vision API with label detection
+    const [labelResult] = await visionClient.labelDetection({
       image: { content: buffer },
     });
 
-    const labels = result.labelAnnotations || [];
+    const labels = labelResult.labelAnnotations || [];
     
-    // Also try object localization for more detailed detection
-    const [objectResult] = await visionClient.objectLocalization({
-      image: { content: buffer },
-    });
+    // Try object localization
+    let objects: any[] = [];
+    try {
+      if (visionClient.objectLocalization) {
+        const [objectResult] = await visionClient.objectLocalization({
+          image: { content: buffer },
+        });
+        objects = objectResult.localizedObjectAnnotations || [];
+      }
+    } catch (error) {
+      console.log('Object localization not available, continuing with labels only');
+    }
 
-    const objects = objectResult.localizedObjectAnnotations || [];
-
-    // Filter and combine results to find food items
+    // Combine all detected items
     const detectedFoodItems = new Set<string>();
+    const allDetections: Array<{item: string, score: number, source: string}> = [];
 
     // Process labels
     labels.forEach(label => {
       const description = label.description?.toLowerCase() || '';
       const score = label.score || 0;
       
-      // Only consider high-confidence labels
-      if (score > 0.5) {
-        // Check if the label matches common food items
-        FOOD_KEYWORDS.forEach(food => {
-          if (description.includes(food) || food.includes(description)) {
-            detectedFoodItems.add(food);
-          }
-        });
-        
-        // Add the label itself if it seems food-related
-        if (isFoodRelated(description)) {
-          detectedFoodItems.add(description);
-        }
+      if (score > 0.3) { // Lower threshold for more results
+        allDetections.push({item: description, score, source: 'label'});
       }
     });
 
@@ -72,23 +108,54 @@ export async function POST(req: NextRequest) {
       const name = object.name?.toLowerCase() || '';
       const score = object.score || 0;
       
-      if (score > 0.5 && isFoodRelated(name)) {
-        detectedFoodItems.add(name);
+      if (score > 0.3) { // Lower threshold
+        allDetections.push({item: name, score, source: 'object'});
+      }
+    });
+
+    // Filter for food items
+    allDetections.forEach(detection => {
+      const item = detection.item.trim();
+      
+      // Skip if it's a known non-food item
+      if (NON_FOOD_ITEMS.some(nonFood => item.includes(nonFood) || nonFood.includes(item))) {
+        return;
+      }
+      
+      // Direct keyword match with fuzzy matching
+      const directMatch = FOOD_KEYWORDS.find(food => 
+        item.includes(food) || food.includes(item) || item === food
+      );
+      
+      if (directMatch) {
+        detectedFoodItems.add(directMatch);
+        return;
+      }
+      
+      // Check if it's food-related
+      if (isFoodRelated(item) && detection.score > 0.4) {
+        // Clean up the item name
+        const cleanedItem = cleanFoodName(item);
+        if (cleanedItem && cleanedItem.length > 2) {
+          detectedFoodItems.add(cleanedItem);
+        }
       }
     });
 
     // Convert to array and clean up
     const foodItems = Array.from(detectedFoodItems)
       .map(item => item.trim())
-      .filter(item => item.length > 0)
-      .slice(0, 10); // Limit to 10 items
+      .filter(item => item.length > 1)
+      .filter((item, index, arr) => arr.indexOf(item) === index) // Remove duplicates
+      .slice(0, 15); // Increase limit to 15 items
 
     return NextResponse.json({
       success: true,
       detectedItems: foodItems,
-      confidence: labels.length > 0 ? 'high' : 'low',
-      rawLabels: labels.map(l => ({ description: l.description, score: l.score })),
-      rawObjects: objects.map(o => ({ name: o.name, score: o.score }))
+      confidence: foodItems.length > 0 ? 'high' : 'low',
+      totalDetections: allDetections.length,
+      rawLabels: labels.slice(0, 10).map(l => ({ description: l.description, score: l.score })),
+      rawObjects: objects.slice(0, 5).map(o => ({ name: o.name, score: o.score }))
     });
 
   } catch (error) {
@@ -100,13 +167,48 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Helper function to determine if a detected item is food-related
+// Improved food detection logic
 function isFoodRelated(item: string): boolean {
   const foodTerms = [
-    'food', 'fruit', 'vegetable', 'meat', 'dairy', 'grain', 'spice', 'herb',
-    'beverage', 'drink', 'produce', 'ingredient', 'edible', 'cuisine',
-    'grocery', 'organic', 'fresh', 'cooking', 'kitchen'
+    // Food categories
+    'food', 'fruit', 'vegetable', 'meat', 'dairy', 'grain', 'spice', 'herb', 'nut',
+    'seed', 'bean', 'legume', 'cereal', 'pasta', 'bread', 'cheese', 'milk', 'egg',
+    'fish', 'seafood', 'poultry', 'beef', 'pork', 'lamb', 'chicken', 'turkey',
+    
+    // Food descriptors
+    'fresh', 'organic', 'natural', 'raw', 'cooked', 'baked', 'fried', 'grilled',
+    'steamed', 'boiled', 'roasted', 'frozen', 'canned', 'dried', 'pickled',
+    
+    // Food contexts
+    'ingredient', 'produce', 'grocery', 'cooking', 'recipe', 'meal',
+    'snack', 'drink', 'beverage', 'edible', 'cuisine', 'dish'
   ];
   
+  // Exclude generic descriptors that might give false positives
+  const excludeTerms = [
+    'container', 'package', 'wrapper', 'bag', 'box', 'bottle', 'can', 'jar',
+    'brand', 'label', 'logo', 'text', 'color', 'size', 'shape', 'material'
+  ];
+  
+  // Check if it contains exclude terms
+  if (excludeTerms.some(term => item.includes(term))) {
+    return false;
+  }
+  
+  // Check for food terms
   return foodTerms.some(term => item.includes(term) || term.includes(item));
+}
+
+// Clean up detected food names
+function cleanFoodName(item: string): string {
+  // Remove common non-food words
+  const wordsToRemove = ['fresh', 'organic', 'natural', 'raw', 'cooked', 'frozen', 'dried'];
+  let cleaned = item;
+  
+  wordsToRemove.forEach(word => {
+    cleaned = cleaned.replace(new RegExp(`\\b${word}\\b`, 'gi'), '').trim();
+  });
+  
+  // Capitalize first letter
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 } 
