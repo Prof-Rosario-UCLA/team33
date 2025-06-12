@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { FaCamera, FaUpload, FaRedo, FaCheck } from 'react-icons/fa';
+import Image from 'next/image';
 
 interface CameraCaptureProps {
   onImageCapture: (file: File) => void;
@@ -219,11 +220,16 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
             /* Preview captured image */
             <div className="space-y-4">
               <div className="text-center">
-                <img 
-                  src={capturedImage} 
-                  alt="Captured image preview for AI analysis" 
-                  className="max-w-full max-h-96 mx-auto rounded-lg"
-                />
+                <div className="relative inline-block max-w-full max-h-96">
+                  <Image 
+                    src={capturedImage} 
+                    alt="Captured image preview for AI analysis" 
+                    width={500}
+                    height={400}
+                    className="max-w-full max-h-96 mx-auto rounded-lg object-contain"
+                    unoptimized
+                  />
+                </div>
               </div>
               
               <div className="flex gap-4 justify-center" role="group" aria-label="Image preview actions">

@@ -4,6 +4,7 @@ import { FaCamera, FaMagic, FaPlus } from "react-icons/fa";
 import { useSession } from "next-auth/react";
 import CameraCapture from "./CameraCapture";
 import ItemSelection from "./ItemSelection";
+import { ExtendedSession } from "../types/auth";
 
 interface ScanSectionProps {
   onNavigate: (section: string) => void;
@@ -15,7 +16,7 @@ export default function ScanSection({ onNavigate }: ScanSectionProps) {
   const [detectedItems, setDetectedItems] = useState<string[]>([]);
   const [showSelection, setShowSelection] = useState(false);
   const [error, setError] = useState("");
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
 
   const handleImageCapture = async (file: File) => {
     setShowCamera(false);
@@ -49,7 +50,7 @@ export default function ScanSection({ onNavigate }: ScanSectionProps) {
   };
 
   const handleConfirmItems = async (selectedItems: { name: string; qty: number }[]) => {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) {
       setError("Authentication required. Please sign in.");
       return;

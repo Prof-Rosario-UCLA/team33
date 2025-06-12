@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import CameraCapture from "../components/CameraCapture";
 import ItemSelection from "../components/ItemSelection";
+import { ExtendedSession } from "../types/auth";
 
 export default function ScanPage() {
   const [showCamera, setShowCamera] = useState(false);
@@ -13,7 +14,7 @@ export default function ScanPage() {
   const [showSelection, setShowSelection] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
 
   // Handle image capture/upload
   const handleImageCapture = async (file: File) => {
@@ -49,7 +50,7 @@ export default function ScanPage() {
 
   // Handle confirming selected items
   const handleConfirmItems = async (selectedItems: { name: string; qty: number }[]) => {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) {
       setError("Authentication required. Please sign in.");
       return;

@@ -4,6 +4,7 @@ import { FaHeart, FaSearch, FaUtensils, FaCheckCircle, FaTimesCircle, FaClock, F
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
+import { ExtendedSession } from "../types/auth";
 
 type Recipe = {
   id: number;
@@ -79,11 +80,11 @@ export default function RecipesPage() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [detailedRecipe, setDetailedRecipe] = useState<DetailedRecipe | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
 
   // Fetch recipes based on pantry items
   useEffect(() => {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) return;
     
     setLoading(true);

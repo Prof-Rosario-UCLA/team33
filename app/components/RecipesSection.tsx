@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaHeart, FaSearch, FaUtensils, FaCheckCircle, FaTimesCircle, FaClock, FaUsers } from "react-icons/fa";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { ExtendedSession } from "../types/auth";
 
 interface RecipesSectionProps {
   onNavigate: (section: string) => void;
@@ -82,10 +83,10 @@ export default function RecipesSection({ onNavigate }: RecipesSectionProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [detailedRecipe, setDetailedRecipe] = useState<DetailedRecipe | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
 
   useEffect(() => {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) return;
     
     setLoading(true);

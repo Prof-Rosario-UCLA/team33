@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaEdit, FaCamera } from "react-icons/fa";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { ExtendedSession } from "../types/auth";
 
 type PantryItem = {
   id: string;
@@ -21,11 +22,11 @@ export default function PantryPage() {
   const [newItem, setNewItem] = useState({ name: "", qty: 1, expirationDate: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItem, setEditItem] = useState({ name: "", qty: 1, expirationDate: "" });
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
 
   // Fetch pantry items
   useEffect(() => {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) return;
     
     setLoading(true);
@@ -39,7 +40,7 @@ export default function PantryPage() {
   // Add item
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) {
       setError("Authentication required. Please sign in.");
       return;
