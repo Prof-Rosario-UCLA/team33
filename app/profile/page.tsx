@@ -13,7 +13,7 @@ export default function ProfilePage() {
       </div>
       <div className="bg-accent/20 rounded-lg p-6 w-full flex flex-col items-center">
         <h2 className="text-lg font-bold text-primary mb-2 flex items-center gap-2"><FaHeart className="text-secondary" /> Saved Recipes</h2>
-        <p className="text-gray-700 text-center">You haven't saved any recipes yet.</p>
+        <p className="text-gray-700 text-center">You haven&apos;t saved any recipes yet.</p>
       </div>
     </div>
   );

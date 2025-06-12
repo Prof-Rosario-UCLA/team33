@@ -69,12 +69,12 @@ export default function RecipesPage() {
       if (searchResults.error) {
         setError(searchResults.error);
       } else {
-        setRecipes(searchResults.map((recipe: any) => ({
+        setRecipes(searchResults.map((recipe: Recipe) => ({
           ...recipe,
           matchPercentage: Math.round((recipe.usedIngredientCount / (recipe.usedIngredientCount + recipe.missedIngredientCount)) * 100)
         })));
       }
-    } catch (err) {
+    } catch {
       setError("Failed to search recipes");
     } finally {
       setLoading(false);

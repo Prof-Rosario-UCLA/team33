@@ -1,6 +1,6 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { FaCamera, FaUpload, FaRedo, FaCheck, FaTimes } from 'react-icons/fa';
+import { useState, useRef, useEffect } from 'react';
+import { FaCamera, FaUpload, FaRedo, FaCheck } from 'react-icons/fa';
 
 interface CameraCaptureProps {
   onImageCapture: (file: File) => void;
@@ -46,7 +46,7 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
         streamRef.current = stream;
         setIsStreaming(true);
       }
-    } catch (err) {
+    } catch {
       setError('Unable to access camera. Please check permissions or use file upload.');
     }
   };
@@ -80,7 +80,6 @@ export default function CameraCapture({ onImageCapture, onClose }: CameraCapture
     // Convert to blob and create file
     canvas.toBlob((blob) => {
       if (blob) {
-        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
         setCapturedImage(canvas.toDataURL('image/jpeg'));
         stopCamera();
       }

@@ -31,18 +31,18 @@ export default function Home() {
       
       <section aria-labelledby="main-features">
         <h2 id="main-features" className="sr-only">Main Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <Link 
             href="/pantry" 
             className="flex flex-col items-center p-6 bg-white rounded-xl shadow hover:shadow-lg border border-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             aria-describedby="pantry-description"
           >
             <FaBoxOpen className="text-4xl text-primary mb-2" aria-hidden="true" />
-            <span className="text-lg font-semibold">My Pantry</span>
+          <span className="text-lg font-semibold">My Pantry</span>
             <span id="pantry-description" className="sr-only">
               View and manage items in your pantry
             </span>
-          </Link>
+        </Link>
           
           <Link 
             href="/recipes" 
@@ -50,11 +50,11 @@ export default function Home() {
             aria-describedby="recipes-description"
           >
             <FaUtensils className="text-4xl text-secondary mb-2" aria-hidden="true" />
-            <span className="text-lg font-semibold">Recipes</span>
+          <span className="text-lg font-semibold">Recipes</span>
             <span id="recipes-description" className="sr-only">
               Discover recipes based on your pantry items
             </span>
-          </Link>
+        </Link>
           
           <Link 
             href="/scan" 
@@ -62,12 +62,12 @@ export default function Home() {
             aria-describedby="scan-description"
           >
             <FaCamera className="text-4xl text-accent mb-2" aria-hidden="true" />
-            <span className="text-lg font-semibold">Scan Items</span>
+          <span className="text-lg font-semibold">Scan Items</span>
             <span id="scan-description" className="sr-only">
               Use AI to scan and add items to your pantry
             </span>
-          </Link>
-        </div>
+        </Link>
+      </div>
       </section>
       
       <section 

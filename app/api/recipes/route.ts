@@ -3,6 +3,31 @@ import { NextRequest, NextResponse } from 'next/server';
 const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
 const SPOONACULAR_BASE_URL = 'https://api.spoonacular.com';
 
+// Interface for Spoonacular recipe response
+interface SpoonacularRecipe {
+  id: number;
+  title: string;
+  image: string;
+  usedIngredientCount: number;
+  missedIngredientCount: number;
+  usedIngredients: Array<{
+    name: string;
+    image: string;
+    original: string;
+  }>;
+  missedIngredients: Array<{
+    name: string;
+    image: string;
+    original: string;
+  }>;
+  unusedIngredients: Array<{
+    name: string;
+    image: string;
+    original: string;
+  }>;
+  likes: number;
+}
+
 // GET: Find recipes based on pantry ingredients 
 export async function GET(req: NextRequest) {
   try {
@@ -26,7 +51,7 @@ export async function GET(req: NextRequest) {
     const recipes = await response.json();
     
     // Transform the data to include more useful information
-    const transformedRecipes = recipes.map((recipe: any) => ({
+    const transformedRecipes = recipes.map((recipe: SpoonacularRecipe) => ({
       id: recipe.id,
       title: recipe.title,
       image: recipe.image,

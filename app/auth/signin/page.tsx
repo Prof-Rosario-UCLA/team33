@@ -1,7 +1,7 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignInPage() {
@@ -9,7 +9,6 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const params = useSearchParams();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

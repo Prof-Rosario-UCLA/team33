@@ -5,6 +5,12 @@ import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
+// Extend the session user type
+interface SessionUser {
+  id: string;
+  email: string;
+}
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -75,7 +81,7 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (token && session.user) {
         session.user.email = token.email;
-        (session.user as any).id = token.id;
+        (session.user as SessionUser).id = token.id as string;
       }
       return session;
     },

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = body;
 
     // Input validation
-    if (!email || !password) {
+  if (!email || !password) {
       return NextResponse.json({ 
         error: 'Email and password are required' 
       }, { status: 400 });
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ 
         error: 'Please provide a valid email address' 
       }, { status: 400 });
-    }
+  }
 
     // Validate password strength
     const passwordValidation = validatePassword(password);
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ 
         error: 'An account with this email already exists' 
       }, { status: 409 });
-    }
+  }
 
     // Hash password with higher cost factor for better security
     const saltRounds = 12;

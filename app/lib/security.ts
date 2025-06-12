@@ -103,7 +103,6 @@ export function generateSecureToken(length: number = 32): string {
  */
 export function isSecureOrigin(req: NextRequest): boolean {
   const origin = req.headers.get('origin');
-  const referer = req.headers.get('referer');
   const protocol = req.headers.get('x-forwarded-proto') || 'http';
   
   // In production, ensure HTTPS

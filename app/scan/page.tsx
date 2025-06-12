@@ -40,7 +40,7 @@ export default function ScanPage() {
       } else {
         setError(data.error || "Failed to analyze image");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to analyze image. Please try again.");
     } finally {
       setAnalyzing(false);
@@ -69,7 +69,7 @@ export default function ScanPage() {
       
       // Navigate to pantry page to show the added items
       router.push('/pantry');
-    } catch (err) {
+    } catch {
       setError("Failed to add items to pantry. Please try again.");
     }
   };

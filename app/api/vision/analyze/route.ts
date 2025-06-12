@@ -56,6 +56,11 @@ const NON_FOOD_ITEMS = [
   'produce', 'spice', 'drink', 'recipe'
 ];
 
+interface LocalizedObjectAnnotation {
+  name?: string | null;
+  score?: number | null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -77,7 +82,7 @@ export async function POST(req: NextRequest) {
     const labels = labelResult.labelAnnotations || [];
     
     // Try object localization
-    let objects: any[] = [];
+    let objects: LocalizedObjectAnnotation[] = [];
     try {
       if (visionClient.objectLocalization) {
         const [objectResult] = await visionClient.objectLocalization({
@@ -85,7 +90,7 @@ export async function POST(req: NextRequest) {
         });
         objects = objectResult.localizedObjectAnnotations || [];
       }
-    } catch (error) {
+    } catch {
       console.log('Object localization not available, continuing with labels only');
     }
 
