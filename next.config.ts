@@ -11,6 +11,24 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Image optimization configuration
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https' as const,
+        hostname: 'spoonacular.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'img.spoonacular.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+
   // Security headers
   async headers() {
     return [

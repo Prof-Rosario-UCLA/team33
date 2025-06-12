@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FaHeart, FaSearch, FaUtensils, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import Image from "next/image";
 
 const USER_ID = "demo-user-id";
 
@@ -130,11 +131,15 @@ export default function RecipesSection({ onNavigate }: RecipesSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
               {recipes.map((recipe) => (
                 <div key={recipe.id} className="bg-white rounded-xl shadow-md p-4 flex flex-col border border-gray-100 hover:shadow-lg transition-shadow">
-                  <img 
-                    src={recipe.image} 
-                    alt={recipe.title} 
-                    className="w-full h-48 object-cover rounded-lg mb-4" 
-                  />
+                  <div className="relative w-full h-48 mb-4">
+                    <Image 
+                      src={recipe.image} 
+                      alt={recipe.title}
+                      fill
+                      className="object-cover rounded-lg"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
                   <h3 className="text-lg font-semibold mb-2 text-gray-800">{recipe.title}</h3>
                   
                   <div className="flex items-center gap-2 mb-3">
@@ -188,11 +193,15 @@ export default function RecipesSection({ onNavigate }: RecipesSectionProps) {
                   </button>
                 </div>
                 
-                <img 
-                  src={selectedRecipe.image} 
-                  alt={selectedRecipe.title} 
-                  className="w-full h-64 object-cover rounded-lg mb-6" 
-                />
+                <div className="relative w-full h-64 mb-6">
+                  <Image 
+                    src={selectedRecipe.image} 
+                    alt={selectedRecipe.title}
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw"
+                  />
+                </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -202,7 +211,7 @@ export default function RecipesSection({ onNavigate }: RecipesSectionProps) {
                     <ul className="space-y-2 max-h-40 overflow-y-auto">
                       {selectedRecipe.usedIngredients.map((ingredient, index) => (
                         <li key={index} className="flex items-center gap-2 text-sm">
-                          <img src={ingredient.image} alt={ingredient.name} className="w-6 h-6 rounded" />
+                          <Image src={ingredient.image} alt={ingredient.name} width={24} height={24} className="rounded" />
                           <span>{ingredient.original}</span>
                         </li>
                       ))}
@@ -216,7 +225,7 @@ export default function RecipesSection({ onNavigate }: RecipesSectionProps) {
                     <ul className="space-y-2 max-h-40 overflow-y-auto">
                       {selectedRecipe.missedIngredients.map((ingredient, index) => (
                         <li key={index} className="flex items-center gap-2 text-sm">
-                          <img src={ingredient.image} alt={ingredient.name} className="w-6 h-6 rounded" />
+                          <Image src={ingredient.image} alt={ingredient.name} width={24} height={24} className="rounded" />
                           <span>{ingredient.original}</span>
                         </li>
                       ))}
