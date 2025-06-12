@@ -2,19 +2,6 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create demo user first
-  await prisma.user.upsert({
-    where: { email: 'demo@pantrify.com' },
-    update: {},
-    create: {
-      id: 'demo-user-id',
-      email: 'demo@pantrify.com',
-      password: 'demo-password-hash',
-    },
-  });
-
-  console.log('Demo user created/updated');
-
   const suggestions = [
     {
       name: 'Apples',

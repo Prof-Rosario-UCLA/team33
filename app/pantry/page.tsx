@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaEdit, FaCamera } from "react-icons/fa";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-
-const USER_ID = "demo-user-id"; // Replace with real user id when auth is ready
 
 type PantryItem = {
   id: string;
@@ -22,26 +21,36 @@ export default function PantryPage() {
   const [newItem, setNewItem] = useState({ name: "", qty: 1, expirationDate: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItem, setEditItem] = useState({ name: "", qty: 1, expirationDate: "" });
+  const { data: session } = useSession();
 
   // Fetch pantry items
   useEffect(() => {
+    const userId = (session?.user as any)?.id;
+    if (!userId) return;
+    
     setLoading(true);
-    fetch(`/api/pantry-items?userId=${USER_ID}`)
+    fetch(`/api/pantry-items?userId=${userId}`)
       .then((res) => res.json())
       .then((data: PantryItem[]) => setItems(data))
       .catch(() => setError("Failed to load items"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [session]);
 
   // Add item
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
+    const userId = (session?.user as any)?.id;
+    if (!userId) {
+      setError("Authentication required. Please sign in.");
+      return;
+    }
+    
     setLoading(true);
     setError("");
     const res = await fetch("/api/pantry-items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newItem, userId: USER_ID }),
+      body: JSON.stringify({ ...newItem, userId }),
     });
     if (!res.ok) return setError("Failed to add item");
     const item: PantryItem = await res.json();

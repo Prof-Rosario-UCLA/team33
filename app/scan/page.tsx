@@ -2,10 +2,9 @@
 import { useState } from "react";
 import { FaCamera, FaMagic, FaPlus } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import CameraCapture from "../components/CameraCapture";
 import ItemSelection from "../components/ItemSelection";
-
-const USER_ID = "demo-user-id"; // Replace with real user id when auth is ready
 
 export default function ScanPage() {
   const [showCamera, setShowCamera] = useState(false);
@@ -14,6 +13,7 @@ export default function ScanPage() {
   const [showSelection, setShowSelection] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { data: session } = useSession();
 
   // Handle image capture/upload
   const handleImageCapture = async (file: File) => {
@@ -49,6 +49,12 @@ export default function ScanPage() {
 
   // Handle confirming selected items
   const handleConfirmItems = async (selectedItems: { name: string; qty: number }[]) => {
+    const userId = (session?.user as any)?.id;
+    if (!userId) {
+      setError("Authentication required. Please sign in.");
+      return;
+    }
+
     setShowSelection(false);
     
     try {
@@ -60,14 +66,13 @@ export default function ScanPage() {
           body: JSON.stringify({ 
             name: item.name, 
             qty: item.qty, 
-            userId: USER_ID 
+            userId: userId 
           }),
         })
       );
 
       await Promise.all(addPromises);
       
-      // Navigate to pantry page to show the added items
       router.push('/pantry');
     } catch {
       setError("Failed to add items to pantry. Please try again.");
